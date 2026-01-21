@@ -7,15 +7,16 @@ from datetime import datetime, timedelta
 import warnings
 import os
 
-warnings.filterwarnings('ignore')
-
 # ==================== PAGE CONFIGURATION ====================
+# This MUST be the first Streamlit command
 st.set_page_config(
     page_title="COVID-19 Analytics Dashboard",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+warnings.filterwarnings('ignore')
 
 # ==================== CUSTOM CSS STYLING ====================
 st.markdown("""
