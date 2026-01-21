@@ -578,64 +578,71 @@ for comorbidity in comorbidities_list:
             'Excess Risk (%)': with_mortality - without_mortality
         })
 
-comorbidity_df = pd.DataFrame(comorbidity_analysis).sort_values('Excess Risk (%)', ascending=False)
+# Check if comorbidity data exists
+if comorbidity_analysis:
+    comorbidity_df = pd.DataFrame(comorbidity_analysis).sort_values('Excess Risk (%)', ascending=False)
+else:
+    st.warning("⚠️ No comorbidity data available for the selected filters. Please adjust your filters.")
+    st.markdown("---")
+    comorbidity_df = None
 
 col_analysis1, col_analysis2 = st.columns(2)
 
-with col_analysis1:
-    st.markdown("#### Excess Mortality Risk by Condition")
-    
-    fig7 = go.Figure(data=[go.Bar(
-        y=comorbidity_df['Condition'],
-        x=comorbidity_df['Excess Risk (%)'],
-        orientation='h',
-        marker=dict(
-            color=comorbidity_df['Excess Risk (%)'],
-            colorscale='Reds',
-            line=dict(color='#00d4ff', width=1)
+if comorbidity_df is not None:
+    with col_analysis1:
+        st.markdown("#### Excess Mortality Risk by Condition")
+        
+        fig7 = go.Figure(data=[go.Bar(
+            y=comorbidity_df['Condition'],
+            x=comorbidity_df['Excess Risk (%)'],
+            orientation='h',
+            marker=dict(
+                color=comorbidity_df['Excess Risk (%)'],
+                colorscale='Reds',
+                line=dict(color='#00d4ff', width=1)
         ),
         text=[f"{x:.1f}%" for x in comorbidity_df['Excess Risk (%)']],
         textposition='outside',
         hovertemplate='<b>%{y}</b><br>Excess Risk: %{x:.1f}%<extra></extra>'
     )])
-    fig7.update_layout(
-        template='plotly_dark',
-        plot_bgcolor='#0f172a',
-        paper_bgcolor='#1e293b',
-        font=dict(color='#f1f5f9', family='Arial, sans-serif'),
-        xaxis_title='Excess Mortality Risk (%)',
-        yaxis_title='Condition',
-        height=450,
-        margin=dict(l=180, r=0, t=30, b=0)
-    )
-    st.plotly_chart(fig7, use_container_width=True)
+        fig7.update_layout(
+            template='plotly_dark',
+            plot_bgcolor='#0f172a',
+            paper_bgcolor='#1e293b',
+            font=dict(color='#f1f5f9', family='Arial, sans-serif'),
+            xaxis_title='Excess Mortality Risk (%)',
+            yaxis_title='Condition',
+            height=450,
+            margin=dict(l=180, r=0, t=30, b=0)
+        )
+        st.plotly_chart(fig7, use_container_width=True)
 
-with col_analysis2:
-    st.markdown("#### Condition Prevalence")
-    
-    fig8 = go.Figure(data=[go.Bar(
-        y=comorbidity_df['Condition'],
-        x=comorbidity_df['Prevalence (%)'],
-        orientation='h',
-        marker=dict(
-            color='#0099ff',
-            line=dict(color='#00d4ff', width=1)
-        ),
-        text=[f"{x:.1f}%" for x in comorbidity_df['Prevalence (%)']],
-        textposition='outside',
-        hovertemplate='<b>%{y}</b><br>Prevalence: %{x:.1f}%<extra></extra>'
-    )])
-    fig8.update_layout(
-        template='plotly_dark',
-        plot_bgcolor='#0f172a',
-        paper_bgcolor='#1e293b',
-        font=dict(color='#f1f5f9', family='Arial, sans-serif'),
-        xaxis_title='Prevalence (%)',
-        yaxis_title='Condition',
-        height=450,
-        margin=dict(l=180, r=0, t=30, b=0)
-    )
-    st.plotly_chart(fig8, use_container_width=True)
+    with col_analysis2:
+        st.markdown("#### Condition Prevalence")
+        
+        fig8 = go.Figure(data=[go.Bar(
+            y=comorbidity_df['Condition'],
+            x=comorbidity_df['Prevalence (%)'],
+            orientation='h',
+            marker=dict(
+                color='#0099ff',
+                line=dict(color='#00d4ff', width=1)
+            ),
+            text=[f"{x:.1f}%" for x in comorbidity_df['Prevalence (%)']],
+            textposition='outside',
+            hovertemplate='<b>%{y}</b><br>Prevalence: %{x:.1f}%<extra></extra>'
+        )])
+        fig8.update_layout(
+            template='plotly_dark',
+            plot_bgcolor='#0f172a',
+            paper_bgcolor='#1e293b',
+            font=dict(color='#f1f5f9', family='Arial, sans-serif'),
+            xaxis_title='Prevalence (%)',
+            yaxis_title='Condition',
+            height=450,
+            margin=dict(l=180, r=0, t=30, b=0)
+        )
+        st.plotly_chart(fig8, use_container_width=True)
 
 st.markdown("---")
 
