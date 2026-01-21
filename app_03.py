@@ -154,24 +154,39 @@ def load_covid_data():
     # Get the directory of the current file
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # Try different file path variations
+    # Try different file path variations for various environments
     file_paths = [
         os.path.join(current_dir, 'Covid Data.csv'),
         'Covid Data.csv',
-        '/mount/src/covid-19-analysis-dasboard/Covid Data.csv'
+        '/mount/src/COVID-19-Analysis-dasboard/Covid Data.csv',
+        '/app/Covid Data.csv'
     ]
     
     df = None
+    last_error = None
+    
     for file_path in file_paths:
         try:
-            if os.path.exists(file_path):
-                df = pd.read_csv(file_path)
-                break
-        except:
+            df = pd.read_csv(file_path)
+            break
+        except FileNotFoundError:
+            last_error = f"Not found: {file_path}"
+            continue
+        except Exception as e:
+            last_error = f"Error reading {file_path}: {str(e)}"
             continue
     
     if df is None:
-        st.error("Error: 'Covid Data.csv' file not found. Please ensure the file is in the same directory as the app.")
+        st.error(f"""
+        ❌ **Error Loading Data**
+        
+        Unable to locate 'Covid Data.csv' file.
+        
+        Current directory: {current_dir}
+        Last error: {last_error}
+        
+        Please ensure the CSV file is in the same directory as app_03.py
+        """)
         st.stop()
     
     # Create mapping dictionaries for encoded values
