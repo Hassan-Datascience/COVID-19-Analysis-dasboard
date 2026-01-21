@@ -158,7 +158,9 @@ def load_covid_data():
     file_paths = [
         os.path.join(current_dir, 'Covid Data.csv'),
         'Covid Data.csv',
+        os.path.join(current_dir, '..', 'Covid Data.csv'),
         '/mount/src/COVID-19-Analysis-dasboard/Covid Data.csv',
+        '/mount/src/covid-19-analysis-dasboard/Covid Data.csv',
         '/app/Covid Data.csv'
     ]
     
