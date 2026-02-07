@@ -21,117 +21,18 @@ warnings.filterwarnings('ignore')
 # ==================== CUSTOM CSS STYLING ====================
 st.markdown("""
     <style>
-    /* Professional Corporate Color Scheme */
-    :root {
-        --primary-color: #3b82f6;
-        --secondary-color: #60a5fa;
-        --accent-color: #8b5cf6;
-        --background-color: #0f172a;
-        --surface-color: #1e293b;
-        --text-primary: #f1f5f9;
-        --text-secondary: #cbd5e1;
-        --success-color: #10b981;
-        --warning-color: #f59e0b;
-    }
-    
-    /* Overall styling - Professional Dark Theme */
-    body {
-        background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
-        color: #f1f5f9;
-        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    /* Sidebar styling - Premium gradient */
-    section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-        border-right: 3px solid #3b82f6;
-        box-shadow: 4px 0 20px rgba(59, 130, 246, 0.1);
-    }
-    
-    .main {
-        background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
-    }
-    
-    /* Header styling - Professional */
-    h1, h2, h3 {
-        color: #f1f5f9;
-        font-weight: 700;
-        letter-spacing: 0.8px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-    
-    /* Metric cards - Sleek professional look */
-    [data-testid="metric-container"] {
-        background: linear-gradient(135deg, #1e293b 0%, #1a1f35 100%);
-        border: 2px solid #3b82f6;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
-    }
-    
-    /* Buttons - Professional gradient */
-    button {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        color: #f1f5f9;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-    }
-    
-    button:hover {
-        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
-        transform: translateY(-3px);
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    }
-    
-    /* Input fields - Professional styling */
-    input, select {
-        background-color: #0f172a !important;
-        color: #f1f5f9 !important;
-        border: 2px solid #3b82f6 !important;
-        border-radius: 8px !important;
-        padding: 8px 12px !important;
-        font-weight: 500;
-    }
-    
-    input:focus, select:focus {
-        border-color: #60a5fa !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-    }
-    
-    /* Sidebar headers */
-    [data-testid="stSidebarUserContent"] > div > div > h2 {
-        color: #60a5fa;
-        margin-top: 30px;
-        margin-bottom: 15px;
-        font-size: 18px;
-    }
-    
-    /* Custom metric box - Premium styling */
     .metric-box {
-        background: linear-gradient(135deg, #1e293b 0%, #1a1f35 100%);
+        background: #1e293b;
         border-left: 5px solid #3b82f6;
         padding: 18px;
         border-radius: 10px;
         margin: 12px 0;
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
-        transition: all 0.3s ease;
     }
-    
-    .metric-box:hover {
-        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.18);
-        transform: translateY(-2px);
-    }
-    
     .metric-value {
         font-size: 36px;
         font-weight: 800;
         color: #60a5fa;
-        letter-spacing: -1px;
     }
-    
     .metric-label {
         font-size: 11px;
         color: #94a3b8;
@@ -140,18 +41,14 @@ st.markdown("""
         font-weight: 600;
         margin-bottom: 8px;
     }
-    
-    /* Divider lines */
-    hr {
-        border-color: rgba(59, 130, 246, 0.2) !important;
-        margin: 20px 0 !important;
-    }
     </style>
     """, unsafe_allow_html=True)
 
 # ==================== LOAD AND CACHE DATA ====================
 @st.cache_data
 def load_covid_data():
+    import pathlib
+    
     # Get the directory of the current file
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -162,7 +59,8 @@ def load_covid_data():
         os.path.join(current_dir, '..', 'Covid Data.csv'),
         '/mount/src/COVID-19-Analysis-dasboard/Covid Data.csv',
         '/mount/src/covid-19-analysis-dasboard/Covid Data.csv',
-        '/app/Covid Data.csv'
+        '/app/Covid Data.csv',
+        pathlib.Path(__file__).parent / 'Covid Data.csv',
     ]
     
     df = None
@@ -171,6 +69,7 @@ def load_covid_data():
     for file_path in file_paths:
         try:
             df = pd.read_csv(file_path)
+            st.success(f"✅ Data loaded from: {file_path}")
             break
         except FileNotFoundError:
             last_error = f"Not found: {file_path}"
@@ -180,6 +79,13 @@ def load_covid_data():
             continue
     
     if df is None:
+        # List files in current directory for debugging
+        try:
+            files_in_dir = os.listdir(current_dir)
+            file_list = "\n".join(files_in_dir[:20])
+        except:
+            file_list = "Could not read directory"
+        
         st.error(f"""
         ❌ **Error Loading Data**
         
@@ -188,7 +94,10 @@ def load_covid_data():
         Current directory: {current_dir}
         Last error: {last_error}
         
-        Please ensure the CSV file is in the same directory as app_03.py
+        Files in current directory:
+        {file_list}
+        
+        **Solution**: Ensure the CSV file is committed to your GitHub repository in the same directory as app_03.py
         """)
         st.stop()
     
@@ -205,19 +114,35 @@ def load_covid_data():
         7: 'Confirmed COVID-19 Related Death',
     }
     
-    # Decode columns
-    df['SEX'] = df['SEX'].map(sex_map)
-    df['PATIENT_TYPE'] = df['PATIENT_TYPE'].map(patient_type_map)
-    df['CLASSIFICATION'] = df['CLASIFFICATION_FINAL'].map(classification_map)
-    df['DATE_DIED'] = pd.to_datetime(df['DATE_DIED'], errors='coerce')
-    
-    # Create mortality flag
-    df['MORTALITY'] = df['DATE_DIED'].notna().astype(int)
-    
-    # Create comorbidity columns
-    comorbidities = ['DIABETES', 'COPD', 'ASTHMA', 'INMSUPR', 'HIPERTENSION', 
-                     'OTHER_DISEASE', 'CARDIOVASCULAR', 'OBESITY', 'RENAL_CHRONIC', 'TOBACCO']
-    df['COMORBIDITY_COUNT'] = df[comorbidities].apply(lambda x: (x == 1).sum(), axis=1)
+    try:
+        # Decode columns - handle missing columns gracefully
+        if 'SEX' in df.columns:
+            df['SEX'] = df['SEX'].map(sex_map)
+        if 'PATIENT_TYPE' in df.columns:
+            df['PATIENT_TYPE'] = df['PATIENT_TYPE'].map(patient_type_map)
+        if 'CLASIFFICATION_FINAL' in df.columns:
+            df['CLASSIFICATION'] = df['CLASIFFICATION_FINAL'].map(classification_map)
+        if 'DATE_DIED' in df.columns:
+            df['DATE_DIED'] = pd.to_datetime(df['DATE_DIED'], errors='coerce')
+        
+        # Create mortality flag
+        if 'DATE_DIED' in df.columns:
+            df['MORTALITY'] = df['DATE_DIED'].notna().astype(int)
+        else:
+            df['MORTALITY'] = 0
+        
+        # Create comorbidity columns
+        comorbidities = ['DIABETES', 'COPD', 'ASTHMA', 'INMSUPR', 'HIPERTENSION', 
+                         'OTHER_DISEASE', 'CARDIOVASCULAR', 'OBESITY', 'RENAL_CHRONIC', 'TOBACCO']
+        available_comorbidities = [col for col in comorbidities if col in df.columns]
+        if available_comorbidities:
+            df['COMORBIDITY_COUNT'] = df[available_comorbidities].apply(lambda x: (x == 1).sum(), axis=1)
+        else:
+            df['COMORBIDITY_COUNT'] = 0
+            
+    except Exception as e:
+        st.error(f"Error processing data columns: {str(e)}")
+        st.stop()
     
     return df
 
@@ -239,43 +164,51 @@ st.markdown("---")
 st.sidebar.markdown("### 🎯 ADVANCED FILTERS")
 
 # Sex Filter
-sex_options = ['All'] + sorted(df['SEX'].dropna().unique().tolist())
-selected_sex = st.sidebar.multiselect('**Patient Gender**', sex_options, default='All')
-if 'All' not in selected_sex and selected_sex:
-    df_filtered = df[df['SEX'].isin(selected_sex)]
+if 'SEX' in df.columns:
+    sex_options = ['All'] + sorted(df['SEX'].dropna().unique().tolist())
+    selected_sex = st.sidebar.multiselect('**Patient Gender**', sex_options, default='All')
+    if 'All' not in selected_sex and selected_sex:
+        df_filtered = df[df['SEX'].isin(selected_sex)]
+    else:
+        df_filtered = df.copy()
 else:
     df_filtered = df.copy()
 
 # Patient Type Filter
-patient_types = ['All'] + sorted(df_filtered['PATIENT_TYPE'].dropna().unique().tolist())
-selected_patient_type = st.sidebar.multiselect('**Patient Type**', patient_types, default='All')
-if 'All' not in selected_patient_type and selected_patient_type:
-    df_filtered = df_filtered[df_filtered['PATIENT_TYPE'].isin(selected_patient_type)]
+if 'PATIENT_TYPE' in df_filtered.columns:
+    patient_types = ['All'] + sorted(df_filtered['PATIENT_TYPE'].dropna().unique().tolist())
+    selected_patient_type = st.sidebar.multiselect('**Patient Type**', patient_types, default='All')
+    if 'All' not in selected_patient_type and selected_patient_type:
+        df_filtered = df_filtered[df_filtered['PATIENT_TYPE'].isin(selected_patient_type)]
 
 # Age Range Filter
-age_min, age_max = st.sidebar.slider('**Age Range**', 0, 130, (0, 130))
-df_filtered = df_filtered[(df_filtered['AGE'] >= age_min) & (df_filtered['AGE'] <= age_max)]
+if 'AGE' in df_filtered.columns:
+    age_min, age_max = st.sidebar.slider('**Age Range**', 0, 130, (0, 130))
+    df_filtered = df_filtered[(df_filtered['AGE'] >= age_min) & (df_filtered['AGE'] <= age_max)]
 
 # Mortality Status Filter
-mortality_options = st.sidebar.multiselect('**Patient Outcome**', 
-                                          ['All', 'Survived', 'Deceased'], 
-                                          default='All')
-if 'All' not in mortality_options and mortality_options:
-    mortality_filter = []
-    if 'Deceased' in mortality_options:
-        mortality_filter.append(1)
-    if 'Survived' in mortality_options:
-        mortality_filter.append(0)
-    df_filtered = df_filtered[df_filtered['MORTALITY'].isin(mortality_filter)]
+if 'MORTALITY' in df_filtered.columns:
+    mortality_options = st.sidebar.multiselect('**Patient Outcome**', 
+                                              ['All', 'Survived', 'Deceased'], 
+                                              default='All')
+    if 'All' not in mortality_options and mortality_options:
+        mortality_filter = []
+        if 'Deceased' in mortality_options:
+            mortality_filter.append(1)
+        if 'Survived' in mortality_options:
+            mortality_filter.append(0)
+        df_filtered = df_filtered[df_filtered['MORTALITY'].isin(mortality_filter)]
 
 # ICU Status Filter
-icu_hospitalized = st.sidebar.checkbox('**Limit to ICU Patients**', value=False)
-if icu_hospitalized:
-    df_filtered = df_filtered[df_filtered['ICU'].isin([1, 2])]
+if 'ICU' in df_filtered.columns:
+    icu_hospitalized = st.sidebar.checkbox('**Limit to ICU Patients**', value=False)
+    if icu_hospitalized:
+        df_filtered = df_filtered[df_filtered['ICU'].isin([1, 2])]
 
 # Comorbidity Filter
-min_comorbidities = st.sidebar.slider('**Minimum Comorbidities**', 0, 10, 0)
-df_filtered = df_filtered[df_filtered['COMORBIDITY_COUNT'] >= min_comorbidities]
+if 'COMORBIDITY_COUNT' in df_filtered.columns:
+    min_comorbidities = st.sidebar.slider('**Minimum Comorbidities**', 0, 10, 0)
+    df_filtered = df_filtered[df_filtered['COMORBIDITY_COUNT'] >= min_comorbidities]
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"**📈 Records Selected:** {len(df_filtered):,} / {len(df):,}")
@@ -296,7 +229,10 @@ with col1:
     """, unsafe_allow_html=True)
 
 with col2:
-    mortality_rate = (df_filtered['MORTALITY'].sum() / len(df_filtered) * 100) if len(df_filtered) > 0 else 0
+    if 'MORTALITY' in df_filtered.columns:
+        mortality_rate = (df_filtered['MORTALITY'].sum() / len(df_filtered) * 100) if len(df_filtered) > 0 else 0
+    else:
+        mortality_rate = 0
     st.markdown(f"""
     <div class="metric-box">
         <div class="metric-label">Mortality Rate</div>
@@ -305,7 +241,10 @@ with col2:
     """, unsafe_allow_html=True)
 
 with col3:
-    deaths = df_filtered['MORTALITY'].sum()
+    if 'MORTALITY' in df_filtered.columns:
+        deaths = df_filtered['MORTALITY'].sum()
+    else:
+        deaths = 0
     st.markdown(f"""
     <div class="metric-box">
         <div class="metric-label">Total Deaths</div>
@@ -314,7 +253,10 @@ with col3:
     """, unsafe_allow_html=True)
 
 with col4:
-    avg_age = df_filtered['AGE'].mean()
+    if 'AGE' in df_filtered.columns:
+        avg_age = df_filtered['AGE'].mean()
+    else:
+        avg_age = 0
     st.markdown(f"""
     <div class="metric-box">
         <div class="metric-label">Average Age</div>
@@ -323,8 +265,11 @@ with col4:
     """, unsafe_allow_html=True)
 
 with col5:
-    hospitalized = len(df_filtered[df_filtered['PATIENT_TYPE'] == 'Hospitalized'])
-    hosp_rate = (hospitalized / len(df_filtered) * 100) if len(df_filtered) > 0 else 0
+    if 'PATIENT_TYPE' in df_filtered.columns:
+        hospitalized = len(df_filtered[df_filtered['PATIENT_TYPE'] == 'Hospitalized'])
+        hosp_rate = (hospitalized / len(df_filtered) * 100) if len(df_filtered) > 0 else 0
+    else:
+        hosp_rate = 0
     st.markdown(f"""
     <div class="metric-box">
         <div class="metric-label">Hospitalization Rate</div>
@@ -333,6 +278,9 @@ with col5:
     """, unsafe_allow_html=True)
 
 st.markdown("---")
+
+# Show a quick status to avoid timeout
+st.success("✅ Dashboard loaded! Rendering visualizations...")
 
 # ==================== ADVANCED VISUALIZATIONS ====================
 st.markdown("### 📈 EPIDEMIOLOGICAL INSIGHTS")
@@ -601,11 +549,11 @@ if comorbidity_df is not None:
                 color=comorbidity_df['Excess Risk (%)'],
                 colorscale='Reds',
                 line=dict(color='#00d4ff', width=1)
-        ),
-        text=[f"{x:.1f}%" for x in comorbidity_df['Excess Risk (%)']],
-        textposition='outside',
-        hovertemplate='<b>%{y}</b><br>Excess Risk: %{x:.1f}%<extra></extra>'
-    )])
+            ),
+            text=[f"{x:.1f}%" for x in comorbidity_df['Excess Risk (%)']],
+            textposition='outside',
+            hovertemplate='<b>%{y}</b><br>Excess Risk: %{x:.1f}%<extra></extra>'
+        )])
         fig7.update_layout(
             template='plotly_dark',
             plot_bgcolor='#0f172a',
